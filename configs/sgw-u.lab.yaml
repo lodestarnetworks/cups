@@ -1,0 +1,35 @@
+management_listen: 10.250.60.2:8081
+debug_listen: 127.0.0.1:6060
+allowed_origins:
+  - http://localhost:3000
+pfcp_listen: 10.250.30.2:8805
+pfcp_advertise: 10.250.30.2
+allowed_sgwc:
+  - 10.250.30.1
+access_gtpu_listen: 10.250.40.1:2152
+allowed_access_peers:
+  - 10.250.40.2
+core_gtpu_listen: 10.250.50.1:2152
+allowed_core_peers:
+  - 10.250.50.2
+socket_buffer_bytes: 16777216
+gtpu_batch_size: 64
+downlink_buffering:
+  - qci: 0
+    max_packets: 65536
+    max_bytes: 67108864
+    max_packets_per_bearer: 32
+    hold_time: 5s
+  - qci: 5
+    max_packets: 16384
+    max_bytes: 16777216
+    max_packets_per_bearer: 64
+    hold_time: 10s
+downlink_report_queue_size: 1024
+downlink_report_suppression: 5s
+downlink_report_timeout: 5s
+association_timeout: 15s
+association_grace_window: 120s
+retransmit_timeout: 500ms
+max_retransmits: 3
+max_sessions: 1000000

@@ -1,0 +1,32 @@
+management_listen: 10.250.60.1:8080
+allowed_origins:
+  - http://localhost:3000
+sgwu_metrics_url: http://10.250.60.2:8081
+s11_listen: 10.250.10.1:2123
+s11_advertise: 10.250.10.1
+allowed_mme:
+  - 10.250.10.2
+s5_listen: 10.250.20.1:2123
+s5_advertise: 10.250.20.1
+pgw_control: 10.250.20.2:2123
+pfcp_listen: 10.250.30.1:8805
+pfcp_advertise: 10.250.30.1
+pfcp_remote: 10.250.30.2:8805
+downlink_notification_delay: 0s
+sgwu_access_ip: 10.250.40.1
+sgwu_core_ip: 10.250.50.1
+recovery_counter: 1
+procedure_timeout: 5s
+heartbeat_interval: 5s
+retransmit_timeout: 500ms
+max_retransmits: 3
+reconcile_workers: 64
+max_sessions: 1000000
+subscriber_salt: replace-this-before-shared-use
+# Enable these on a persistent local filesystem outside the disposable lab:
+# state_file: /var/lib/sgw-next/sgw-c.wal
+# state_wal_max_bytes: 4294967296
+# Optional production maintenance gate. File present means reject only new
+# Create Session requests; existing bearers continue until normal teardown.
+# admission_drain_file: /var/lib/sgw-next/sgw-c.drain
+# admission_poll_interval: 250ms

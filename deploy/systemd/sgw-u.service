@@ -1,0 +1,42 @@
+[Unit]
+Description=SGW Next LTE user plane
+Documentation=file:/usr/local/share/doc/sgw-next/operator-guide.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=sgw-next
+Group=sgw-next
+ExecStart=/usr/local/lib/sgw-next/sgw-u --config /etc/sgw-next/sgw-u.yaml
+Restart=on-failure
+RestartSec=2s
+TimeoutStopSec=10s
+LimitNOFILE=262144
+AmbientCapabilities=CAP_BPF CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_BPF CAP_NET_ADMIN
+UMask=0077
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectProc=invisible
+ProtectSystem=strict
+RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @raw-io @reboot @swap
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

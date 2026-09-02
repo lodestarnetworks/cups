@@ -1,0 +1,186 @@
+rule_files:
+  - lodestar-cups-alerts.yaml
+
+evaluation_interval: 15s
+
+tests:
+  - name: SGW-C admission drain alerts only after fifteen minutes
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwc_admission_draining{job="lodestar-sgw-c"}'
+        values: 1x65
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: LodestarControlPlaneAdmissionDrainStuck
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-sgw-c
+              severity: warning
+            exp_annotations:
+              summary: A control plane has remained in admission drain
+              description: Confirm that maintenance is still active; new LTE PDN sessions have been rejected for 15 minutes.
+
+  - name: PGW-C admission check failure fires immediately
+    interval: 15s
+    input_series:
+      - series: 'lodestar_pgw_admission_check_errors_total{job="lodestar-pgw-c",node="pgw-c"}'
+        values: 0 0 1 1 1
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarControlPlaneAdmissionCheckFailure
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-pgw-c
+              node: pgw-c
+              severity: critical
+            exp_annotations:
+              summary: Admission control failed closed
+              description: The configured drain-file path could not be checked. New sessions are blocked until filesystem access is restored.
+
+  - name: GTP peer-restart purge failure fires immediately
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwc_peer_restart_purge_failures_total{job="lodestar-sgw-c"}'
+        values: 0 0 1 1 1
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarGTPPeerRestartPurgeFailure
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-sgw-c
+              severity: critical
+            exp_annotations:
+              summary: A restarted GTPv2-C peer left stale session state
+              description: The control plane withheld the triggering request and will retry cleanup; inspect S11/S5, PFCP, and durable-state errors before admitting more sessions.
+
+  - name: PGW-C peer-restart purge failure fires immediately
+    interval: 15s
+    input_series:
+      - series: 'lodestar_pgw_peer_restart_purge_failures_total{job="lodestar-pgw-c"}'
+        values: 0 0 1 1 1
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarGTPPeerRestartPurgeFailure
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-pgw-c
+              severity: critical
+            exp_annotations:
+              summary: A restarted GTPv2-C peer left stale session state
+              description: The control plane withheld the triggering request and will retry cleanup; inspect S11/S5, PFCP, and durable-state errors before admitting more sessions.
+
+  - name: SGW access-socket drops trigger independently
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwu_access_socket_drops_total{job="lodestar-sgw-u"}'
+        values: 0 0 1 1 1
+      - series: 'sgw_next_sgwu_core_socket_drops_total{job="lodestar-sgw-u"}'
+        values: 0 0 0 0 0
+      - series: 'lodestar_pgwu_pfcp_socket_drops_total{job="lodestar-pgw-u",node="pgw-u"}'
+        values: 0 0 0 0 0
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarUserPlaneSocketDrops
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-sgw-u
+              severity: critical
+            exp_annotations:
+              summary: Kernel socket drops detected
+              description: Packets are being lost before application processing. Check RSS, CPU saturation, and receive-buffer sizing.
+
+  - name: PGW-U PFCP-socket drops trigger despite its node label
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwu_access_socket_drops_total{job="lodestar-sgw-u"}'
+        values: 0 0 0 0 0
+      - series: 'sgw_next_sgwu_core_socket_drops_total{job="lodestar-sgw-u"}'
+        values: 0 0 0 0 0
+      - series: 'lodestar_pgwu_pfcp_socket_drops_total{job="lodestar-pgw-u",node="pgw-u"}'
+        values: 0 0 1 1 1
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarUserPlaneSocketDrops
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-pgw-u
+              node: pgw-u
+              severity: critical
+            exp_annotations:
+              summary: Kernel socket drops detected
+              description: Packets are being lost before application processing. Check RSS, CPU saturation, and receive-buffer sizing.
+
+  - name: SGW bounded-queue drops trigger independently
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwu_drop_queue_full_total{job="lodestar-sgw-u"}'
+        values: 0 0 1 1 1
+      - series: 'lodestar_pgwu_drop_queue_full_total{job="lodestar-pgw-u",node="pgw-u"}'
+        values: 0 0 0 0 0
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarUserPlaneQueueDrops
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-sgw-u
+              severity: critical
+            exp_annotations:
+              summary: Bounded user-plane queues are dropping packets
+              description: The packet path is saturated or an egress writer is stalled.
+
+  - name: PGW-U bounded-queue drops trigger despite its node label
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwu_drop_queue_full_total{job="lodestar-sgw-u"}'
+        values: 0 0 0 0 0
+      - series: 'lodestar_pgwu_drop_queue_full_total{job="lodestar-pgw-u",node="pgw-u"}'
+        values: 0 0 1 1 1
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: LodestarUserPlaneQueueDrops
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-pgw-u
+              node: pgw-u
+              severity: critical
+            exp_annotations:
+              summary: Bounded user-plane queues are dropping packets
+              description: The packet path is saturated or an egress writer is stalled.
+
+  - name: Non-authoritative SGW-U zero fields do not disable durable-state alerting
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwc_control_state_durable{job="lodestar-sgw-c"}'
+        values: 1x8
+      - series: 'sgw_next_sgwc_control_state_durable{job="lodestar-sgw-u"}'
+        values: 0x8
+      - series: 'lodestar_pgw_control_state_durable{job="lodestar-pgw-c",node="pgw-c"}'
+        values: 1x8
+      - series: 'lodestar_pgw_pfcp_usage_ledger_durable{job="lodestar-pgw-c",node="pgw-c"}'
+        values: 1x8
+    alert_rule_test:
+      - eval_time: 90s
+        alertname: LodestarDurableStateDisabled
+        exp_alerts: []
+
+  - name: Authoritative SGW-C durable-state loss still fires
+    interval: 15s
+    input_series:
+      - series: 'sgw_next_sgwc_control_state_durable{job="lodestar-sgw-c"}'
+        values: 0x8
+      - series: 'sgw_next_sgwc_control_state_durable{job="lodestar-sgw-u"}'
+        values: 0x8
+      - series: 'lodestar_pgw_control_state_durable{job="lodestar-pgw-c",node="pgw-c"}'
+        values: 1x8
+      - series: 'lodestar_pgw_pfcp_usage_ledger_durable{job="lodestar-pgw-c",node="pgw-c"}'
+        values: 1x8
+    alert_rule_test:
+      - eval_time: 90s
+        alertname: LodestarDurableStateDisabled
+        exp_alerts:
+          - exp_labels:
+              job: lodestar-sgw-c
+              severity: critical
+            exp_annotations:
+              summary: A production control plane is running without durable authority
+              description: Session or usage reconciliation may not survive a process restart.

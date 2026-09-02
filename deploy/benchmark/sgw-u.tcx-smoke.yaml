@@ -1,0 +1,43 @@
+management_listen: 10.253.3.1:8081
+pfcp_listen: 10.253.3.1:8805
+pfcp_advertise: 10.253.3.1
+allowed_sgwc:
+  - 10.253.3.2
+access_gtpu_listen: 10.253.1.1:2152
+allowed_access_peers:
+  - 10.253.1.2
+core_gtpu_listen: 10.253.2.1:2152
+allowed_core_peers:
+  - 10.253.2.2
+socket_buffer_bytes: 1048576
+gtpu_batch_size: 64
+downlink_buffering:
+  - qci: 0
+    max_packets: 1024
+    max_bytes: 1048576
+    max_packets_per_bearer: 16
+    hold_time: 1s
+  - qci: 5
+    max_packets: 256
+    max_bytes: 262144
+    max_packets_per_bearer: 32
+    hold_time: 2s
+downlink_report_queue_size: 64
+downlink_report_suppression: 1s
+downlink_report_timeout: 1s
+association_timeout: 2s
+association_grace_window: 5s
+retransmit_timeout: 250ms
+max_retransmits: 1
+max_sessions: 16
+fast_path:
+  mode: tcx
+  access_interface: lstacc
+  core_interface: lstcore
+  max_rules: 64
+  access_neighbours:
+    - ip: 10.253.1.2
+      mac: 02:00:00:00:a1:02
+  core_neighbours:
+    - ip: 10.253.2.2
+      mac: 02:00:00:00:a2:02

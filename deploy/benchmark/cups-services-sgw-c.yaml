@@ -1,0 +1,34 @@
+management_listen: 10.253.60.1:8080
+allowed_origins: []
+sgwu_metrics_url: http://10.253.60.2:8081
+
+s11_listen: 10.253.10.1:2123
+s11_advertise: 10.253.10.1
+allowed_mme:
+  - 10.253.10.2
+
+s5_listen: 10.253.20.1:2123
+s5_advertise: 10.253.20.1
+pgw_control: 10.253.20.2:2123
+
+pfcp_listen: 10.253.31.1:8805
+pfcp_advertise: 10.253.31.1
+pfcp_remote: 10.253.31.2:8805
+pfcp_enterprise_id: 0
+
+downlink_notification_delay: 0s
+usage_reporting_threshold_bytes: 1073741824
+sgwu_access_ip: 10.253.40.1
+sgwu_core_ip: 10.253.50.1
+recovery_counter: 1
+procedure_timeout: 5s
+heartbeat_interval: 5s
+retransmit_timeout: 500ms
+max_retransmits: 3
+reconcile_workers: 64
+max_sessions: 196599
+subscriber_salt_file: /run/lodestar-cups-services/subscriber-salt
+state_file: /run/lodestar-cups-services/sgw-c.wal
+state_wal_max_bytes: 4294967296
+admission_drain_file: /run/lodestar-cups-services/sgw-c.drain
+admission_poll_interval: 25ms

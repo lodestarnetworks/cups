@@ -1,0 +1,135 @@
+groups:
+  - name: lodestar-cups-availability
+    interval: 15s
+    rules:
+      - alert: LodestarCUPSComponentMissing
+        expr: up{job=~"lodestar-(sgw|pgw)-(c|u)"} == 0
+        for: 30s
+        labels: {severity: critical}
+        annotations:
+          summary: "{{ $labels.job }} is unavailable"
+          description: "The LTE CUPS component has been unreachable for more than 30 seconds."
+      - alert: LodestarPFCPAssociationUnavailable
+        expr: pfcp_association_state{job=~"lodestar-(sgw|pgw)-u",state="associated"} != 1 or pfcp_association_state{job="lodestar-sgw-c",node="sgw-u",state="associated"} != 1 or pfcp_association_state{job="lodestar-pgw-c",node="pgw-c"} != 1
+        for: 30s
+        labels: {severity: critical}
+        annotations:
+          summary: "PFCP association is unavailable"
+          description: "The control and user planes have not been associated for 30 seconds. New sessions may be blocked."
+      - alert: LodestarPFCPGraceExpiring
+        expr: pfcp_grace_seconds_remaining{job=~"lodestar-(sgw-c|sgw-u|pgw-u)"} > 0 and pfcp_grace_seconds_remaining{job=~"lodestar-(sgw-c|sgw-u|pgw-u)"} < 30
+        for: 5s
+        labels: {severity: warning}
+        annotations:
+          summary: "PFCP recovery grace has less than 30 seconds remaining"
+          description: "Restore the control-plane association before preserved user-plane sessions expire."
+      - alert: LodestarControlPlaneAdmissionDrainStuck
+        expr: sgw_next_sgwc_admission_draining{job="lodestar-sgw-c"} == 1 or lodestar_pgw_admission_draining{job="lodestar-pgw-c"} == 1
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "A control plane has remained in admission drain"
+          description: "Confirm that maintenance is still active; new LTE PDN sessions have been rejected for 15 minutes."
+      - alert: LodestarControlPlaneAdmissionCheckFailure
+        expr: increase(sgw_next_sgwc_admission_check_errors_total{job="lodestar-sgw-c"}[5m]) > 0 or increase(lodestar_pgw_admission_check_errors_total{job="lodestar-pgw-c"}[5m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "Admission control failed closed"
+          description: "The configured drain-file path could not be checked. New sessions are blocked until filesystem access is restored."
+
+  - name: lodestar-cups-integrity
+    interval: 15s
+    rules:
+      - alert: LodestarPFCPUsageSequenceIntegrityFailure
+        expr: increase(sgw_next_sgwc_pfcp_usage_sequence_gaps_total{job="lodestar-sgw-c"}[5m]) > 0 or increase(sgw_next_sgwc_pfcp_usage_sequence_conflicts_total{job="lodestar-sgw-c"}[5m]) > 0 or increase(lodestar_pgw_pfcp_usage_reports_total{job="lodestar-pgw-c",result=~"sequence_gap|sequence_conflict"}[5m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "PFCP usage-report sequence integrity failed"
+          description: "A missing or altered duplicate report was rejected. Traffic remains ungated, but telemetry reconciliation is not trustworthy."
+      - alert: LodestarPFCPUsageReportsBacklogged
+        expr: sgw_next_sgwu_pfcp_usage_reports_pending{job="lodestar-sgw-u"} > 0 or lodestar_pgwu_pfcp_usage_reports_pending{job="lodestar-pgw-u"} > 0
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "PFCP usage reports have remained pending for 2 minutes"
+          description: "Check Sxa/Sxb latency, packet loss, and control-plane journal health."
+      - alert: LodestarDurableStateDisabled
+        expr: sgw_next_sgwc_control_state_durable{job="lodestar-sgw-c"} != 1 or lodestar_pgw_control_state_durable{job="lodestar-pgw-c"} != 1 or lodestar_pgw_pfcp_usage_ledger_durable{job="lodestar-pgw-c"} != 1
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "A production control plane is running without durable authority"
+          description: "Session or usage reconciliation may not survive a process restart."
+      - alert: LodestarStateTailRecovered
+        expr: sgw_next_sgwc_control_state_tail_recovered{job="lodestar-sgw-c"} == 1 or sgw_next_sgwc_pfcp_usage_ledger_tail_recovered{job="lodestar-sgw-c"} == 1 or lodestar_pgw_control_state_tail_recovered{job="lodestar-pgw-c"} == 1 or lodestar_pgw_pfcp_usage_ledger_tail_recovered{job="lodestar-pgw-c"} == 1
+        for: 0s
+        labels: {severity: warning}
+        annotations:
+          summary: "A crash-tail record was recovered"
+          description: "The journal recovered safely, but investigate the prior unclean stop and storage health."
+      - alert: LodestarGTPPeerRestartPurgeFailure
+        expr: increase(sgw_next_sgwc_peer_restart_purge_failures_total{job="lodestar-sgw-c"}[5m]) > 0 or increase(lodestar_pgw_peer_restart_purge_failures_total{job="lodestar-pgw-c"}[5m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "A restarted GTPv2-C peer left stale session state"
+          description: "The control plane withheld the triggering request and will retry cleanup; inspect S11/S5, PFCP, and durable-state errors before admitting more sessions."
+
+  - name: lodestar-cups-dataplane
+    interval: 15s
+    rules:
+      - alert: LodestarUserPlaneSocketDrops
+        expr: increase(sgw_next_sgwu_access_socket_drops_total{job="lodestar-sgw-u"}[1m]) > 0 or increase(sgw_next_sgwu_core_socket_drops_total{job="lodestar-sgw-u"}[1m]) > 0 or increase(lodestar_pgwu_pfcp_socket_drops_total{job="lodestar-pgw-u"}[1m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "Kernel socket drops detected"
+          description: "Packets are being lost before application processing. Check RSS, CPU saturation, and receive-buffer sizing."
+      - alert: LodestarUserPlaneQueueDrops
+        expr: increase(sgw_next_sgwu_drop_queue_full_total{job="lodestar-sgw-u"}[1m]) > 0 or increase(lodestar_pgwu_drop_queue_full_total{job="lodestar-pgw-u"}[1m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "Bounded user-plane queues are dropping packets"
+          description: "The packet path is saturated or an egress writer is stalled."
+      - alert: LodestarUserPlaneLatencyHigh
+        expr: sgw_next_sgwu_processing_latency_seconds_p99{job="lodestar-sgw-u"} > 0.001 or lodestar_pgwu_processing_latency_quantile_seconds{job="lodestar-pgw-u",quantile="0.99"} > 0.001
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Internal user-plane p99 latency exceeds 1 ms"
+          description: "Sustained processing latency is above the 1 ms software-path warning threshold."
+      - alert: LodestarPGWUTrackingDrift
+        expr: lodestar_pgwu_apn_session_tracking_drift{job="lodestar-pgw-u"} != 0 or lodestar_pgwu_qci1_tft_context_drift{job="lodestar-pgw-u"} != 0
+        for: 30s
+        labels: {severity: critical}
+        annotations:
+          summary: "PGW-U control and kernel policy state disagree"
+          description: "Stop new policy operations and reconcile the PGW-U before expanding traffic."
+
+  - name: lodestar-cups-policy
+    interval: 15s
+    rules:
+      - alert: LodestarPolicyAuthenticationFailures
+        expr: increase(lodestar_pgw_policy_api_auth_failures_total{job="lodestar-pgw-c"}[5m]) > 5
+        for: 0s
+        labels: {severity: warning}
+        annotations:
+          summary: "Repeated PGW-C policy authentication failures"
+          description: "Check policy-controller credentials and investigate unauthorized access attempts."
+      - alert: LodestarPolicyProcedureFailures
+        expr: increase(lodestar_pgw_policy_api_operations_total{job="lodestar-pgw-c",result="failed"}[5m]) > 2
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Dedicated-bearer policy procedures are failing"
+          description: "Inspect PGW-C, SGW-C, MME, PFCP, and policy audit events for the rejected operation."
+      - alert: LodestarPolicyAPISaturated
+        expr: increase(lodestar_pgw_policy_api_saturated_total{job="lodestar-pgw-c"}[5m]) > 0
+        for: 0s
+        labels: {severity: critical}
+        annotations:
+          summary: "PGW-C policy API reached its bounded concurrency limit"
+          description: "The authoritative policy source is submitting procedures faster than LTE peers can complete them."

@@ -1,0 +1,37 @@
+management_listen: 10.250.60.3:8180
+s5_listen: 10.250.20.2:2123
+s5_advertise: 10.250.20.2
+allowed_sgw:
+  - 10.250.20.1
+pfcp_listen: 10.250.30.1:8805
+pfcp_advertise: 10.250.30.1
+pfcp_remote: 10.250.30.2:8805
+# Set the same registered, non-3GPP enterprise ID on both nodes to preserve
+# QCI/ARP metadata in Lodestar's private PFCP extension. Zero safely omits it.
+pfcp_enterprise_id: 0
+pgwu_user_ip: 10.250.40.2
+apn: lodestartest
+ue_pool_prefix: 10.251.0.0/16
+ue_gateway: 10.251.0.1
+dns_ipv4:
+  - 10.250.70.1
+  - 10.250.70.2
+ipv4_link_mtu: 1400
+apn_ambr_uplink_bps: 1000000000
+apn_ambr_downlink_bps: 1000000000
+usage_reporting_threshold_bytes: 1073741824
+recovery_counter: 1
+procedure_timeout: 5s
+heartbeat_interval: 5s
+retransmit_timeout: 500ms
+max_retransmits: 3
+reconcile_workers: 64
+max_sessions: 65533
+subscriber_salt: replace-this-before-shared-use
+# Enable these on a persistent local filesystem outside the disposable lab:
+# state_file: /var/lib/sgw-next/pgw-c.wal
+# state_wal_max_bytes: 4294967296
+# Optional production maintenance gate. File present means reject only new
+# Create Session requests; existing bearers continue until normal teardown.
+# admission_drain_file: /var/lib/sgw-next/pgw-c.drain
+# admission_poll_interval: 250ms

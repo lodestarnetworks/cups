@@ -1,0 +1,48 @@
+management_listen: 10.253.60.4:8181
+debug_listen: 127.0.0.1:26067
+
+pfcp_listen: 10.253.32.2:8805
+pfcp_advertise: 10.253.32.2
+pfcp_enterprise_id: 0
+allowed_pgwc:
+  - 10.253.32.1
+
+s5_gtpu_listen: 10.253.50.2:2152
+qci1_s5_gtpu_listen: 10.253.50.3:2152
+allowed_sgwu:
+  - 10.253.50.1
+tunnel_name: lcspgw0
+qci1_tunnel_name: lcspgw1
+datapath_backend: kernel-gtp
+production: true
+
+ue_pools:
+  - apn: internet
+    ue_pool_prefix: 10.245.0.0/16
+    ue_gateway: 10.245.0.1
+  - apn: ims
+    ue_pool_prefix: 10.246.0.0/16
+    ue_gateway: 10.246.0.1
+  - apn: lodestartest
+    ue_pool_prefix: 10.247.0.0/16
+    ue_gateway: 10.247.0.1
+
+kernel_gtp_hash_size: 262144
+kernel_gtp_mtu: 1400
+kernel_gtp_ownership_file: /run/lodestar-cups-services/pgw-u-default.owner
+qci1_kernel_gtp_ownership_file: /run/lodestar-cups-services/pgw-u-qci1.owner
+qci1_route_table: 21631
+qci1_rule_priority: 10620
+qci1_firewall_mark: 1285226496
+qci1_firewall_mask: 4294901760
+max_policy_filters: 1572792
+socket_buffer_bytes: 16777216
+max_packet_size: 65535
+qer_burst_duration: 100ms
+association_timeout: 15s
+association_grace_window: 120s
+retransmit_timeout: 500ms
+max_retransmits: 3
+max_sessions: 196599
+state_file: /run/lodestar-cups-services/pgw-u.wal
+state_wal_max_bytes: 4294967296

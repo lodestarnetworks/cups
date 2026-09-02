@@ -1,0 +1,54 @@
+management_listen: 10.253.60.2:8081
+debug_listen: 127.0.0.1:26066
+allowed_origins: []
+
+pfcp_listen: 10.253.31.2:8805
+pfcp_advertise: 10.253.31.2
+pfcp_enterprise_id: 0
+allowed_sgwc:
+  - 10.253.31.1
+
+access_gtpu_listen: 10.253.40.1:2152
+allowed_access_peers:
+  - 10.253.40.2
+core_gtpu_listen: 10.253.50.1:2152
+allowed_core_peers:
+  - 10.253.50.2
+  - 10.253.50.3
+
+socket_buffer_bytes: 16777216
+gtpu_batch_size: 64
+qer_burst_duration: 100ms
+downlink_buffering:
+  - qci: 0
+    max_packets: 65536
+    max_bytes: 67108864
+    max_packets_per_bearer: 32
+    hold_time: 5s
+  - qci: 5
+    max_packets: 16384
+    max_bytes: 16777216
+    max_packets_per_bearer: 64
+    hold_time: 10s
+downlink_report_queue_size: 4096
+downlink_report_suppression: 5s
+downlink_report_timeout: 5s
+association_timeout: 15s
+association_grace_window: 120s
+retransmit_timeout: 500ms
+max_retransmits: 3
+max_sessions: 196599
+
+fast_path:
+  mode: tcx
+  access_interface: lcsacc
+  core_interface: lcscore
+  max_rules: 4000000
+  access_neighbours:
+    - ip: 10.253.40.2
+      mac: 02:00:00:00:c1:02
+  core_neighbours:
+    - ip: 10.253.50.2
+      mac: 02:00:00:00:c2:02
+    - ip: 10.253.50.3
+      mac: 02:00:00:00:c2:02

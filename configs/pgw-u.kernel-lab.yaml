@@ -1,0 +1,37 @@
+management_listen: 10.250.60.4:8181
+debug_listen: 127.0.0.1:6061
+apn: lodestartest
+pfcp_listen: 10.250.30.2:8805
+pfcp_advertise: 10.250.30.2
+pfcp_enterprise_id: 0
+allowed_pgwc:
+  - 10.250.30.1
+s5_gtpu_listen: 10.250.40.2:2152
+qci1_s5_gtpu_listen: 10.250.40.3:2152
+allowed_sgwu:
+  - 10.250.40.1
+tunnel_name: lspgwu0
+qci1_tunnel_name: lspgwu1
+datapath_backend: kernel-gtp
+production: false
+ue_pool_prefix: 10.251.0.0/16
+ue_gateway: 10.251.0.1
+kernel_gtp_hash_size: 131072
+kernel_gtp_mtu: 1400
+kernel_gtp_ownership_file: /var/lib/sgw-next/pgw-u-default.owner
+qci1_kernel_gtp_ownership_file: /var/lib/sgw-next/pgw-u-qci1.owner
+qci1_route_table: 21521
+qci1_rule_priority: 10510
+qci1_firewall_mark: 1280376832
+qci1_firewall_mask: 4294901760
+max_policy_filters: 524264
+socket_buffer_bytes: 16777216
+max_packet_size: 65535
+qer_burst_duration: 100ms
+association_timeout: 15s
+association_grace_window: 120s
+retransmit_timeout: 500ms
+max_retransmits: 3
+max_sessions: 65533
+state_file: /var/lib/sgw-next/pgw-u.wal
+state_wal_max_bytes: 4294967296

@@ -1,0 +1,44 @@
+[Unit]
+Description=SGW Next private SGW-C/SGW-U operator dashboard
+Documentation=file:/usr/local/share/doc/sgw-next/dashboard.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=sgw-next
+Group=sgw-next
+WorkingDirectory=/opt/sgw-next/dashboard/current
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+Environment=SGW_API_UPSTREAM=http://127.0.0.1:8080
+EnvironmentFile=-/etc/sgw-next/dashboard.env
+# Node's built-in fetch path uses a WebAssembly HTTP parser on this runtime,
+# while --jitless disables WebAssembly. Run V8 normally so SGW telemetry can
+# be proxied; the process remains unprivileged and otherwise sandboxed.
+ExecStart=/opt/sgw-next/toolchains/node/bin/node /opt/sgw-next/dashboard/current/server.js
+Restart=on-failure
+RestartSec=2s
+TimeoutStopSec=10s
+UMask=0077
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictRealtime=true
+SystemCallArchitectures=native
+LockPersonality=true
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target

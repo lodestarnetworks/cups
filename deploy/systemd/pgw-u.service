@@ -1,0 +1,54 @@
+[Unit]
+Description=SGW Next LTE packet-gateway user plane
+Documentation=file:/usr/local/share/doc/sgw-next/operator-guide.md
+Wants=network-online.target
+After=network-online.target systemd-modules-load.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=sgw-next
+Group=sgw-next
+ExecStart=/usr/local/lib/sgw-next/pgw-u --config /etc/sgw-next/pgw-u.yaml
+Restart=on-failure
+RestartSec=2s
+TimeoutStopSec=15s
+LimitNOFILE=262144
+LimitMEMLOCK=infinity
+UMask=0077
+StateDirectory=sgw-next
+StateDirectoryMode=0700
+# CAP_PERFMON selects the privileged verifier path for the PGW-U's bounded
+# TCX policy programs on kernels that otherwise reject the load as EFAULT.
+AmbientCapabilities=CAP_BPF CAP_NET_ADMIN CAP_PERFMON
+CapabilityBoundingSet=CAP_BPF CAP_NET_ADMIN CAP_PERFMON
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+# The kernel backend disables IPv6 on only the GTP interfaces it creates.
+# Keep every other sysctl read-only while allowing those dynamic per-link
+# entries to appear under the IPv6 conf subtree.
+ProtectKernelTunables=false
+ReadOnlyPaths=/proc/sys
+ReadWritePaths=/proc/sys/net/ipv6/conf
+ProtectProc=invisible
+ProtectSystem=strict
+RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @raw-io @reboot @swap
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

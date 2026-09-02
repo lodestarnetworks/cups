@@ -1,0 +1,62 @@
+management_listen: 10.253.60.3:8180
+policy_listen: 127.0.0.1:28182
+policy_auth_token_file: /run/lodestar-cups-services/pgw-policy-token
+policy_max_body_bytes: 65536
+policy_max_in_flight: 64
+
+s5_listen: 10.253.20.2:2123
+s5_advertise: 10.253.20.2
+allowed_sgw:
+  - 10.253.20.1
+
+pfcp_listen: 10.253.32.1:8805
+pfcp_advertise: 10.253.32.1
+pfcp_remote: 10.253.32.2:8805
+pfcp_enterprise_id: 0
+pgwu_user_ip: 10.253.50.2
+pgwu_qci1_user_ip: 10.253.50.3
+
+apn_profiles:
+  - apn: internet
+    ue_pool_prefix: 10.245.0.0/16
+    ue_gateway: 10.245.0.1
+    dns_ipv4:
+      - 10.253.70.1
+      - 10.253.70.2
+    ipv4_link_mtu: 1400
+    apn_ambr_uplink_bps: 1000000000
+    apn_ambr_downlink_bps: 1000000000
+  - apn: ims
+    ue_pool_prefix: 10.246.0.0/16
+    ue_gateway: 10.246.0.1
+    dns_ipv4:
+      - 10.253.70.1
+      - 10.253.70.2
+    pcscf_ipv4:
+      - 10.253.80.2
+    ipv4_link_mtu: 1400
+    apn_ambr_uplink_bps: 1000000000
+    apn_ambr_downlink_bps: 1000000000
+  - apn: lodestartest
+    ue_pool_prefix: 10.247.0.0/16
+    ue_gateway: 10.247.0.1
+    dns_ipv4:
+      - 10.253.70.1
+      - 10.253.70.2
+    ipv4_link_mtu: 1400
+    apn_ambr_uplink_bps: 1000000000
+    apn_ambr_downlink_bps: 1000000000
+
+usage_reporting_threshold_bytes: 1073741824
+recovery_counter: 1
+procedure_timeout: 5s
+heartbeat_interval: 5s
+retransmit_timeout: 500ms
+max_retransmits: 3
+reconcile_workers: 64
+max_sessions: 196599
+subscriber_salt_file: /run/lodestar-cups-services/subscriber-salt
+state_file: /run/lodestar-cups-services/pgw-c.wal
+state_wal_max_bytes: 4294967296
+admission_drain_file: /run/lodestar-cups-services/pgw-c.drain
+admission_poll_interval: 25ms
